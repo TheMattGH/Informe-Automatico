@@ -23,7 +23,7 @@ class PDFGenerator:
 
     def AddTable(self, titulo, cabecera, datos):    
         self.contenido.append(Paragraph(titulo, self.estilos["Title"]))
-        tabla = Table([cabecera] + [datos], repeatRows=1)
+        tabla = Table([cabecera] + datos, repeatRows=1)
         tabla.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
@@ -35,8 +35,10 @@ class PDFGenerator:
     def AddKeyValueTable(self, titulo, data_dict):
         self.contenido.append(Paragraph(titulo, self.estilos["Title"]))
 
+        col_widths = [130, 200]  # ajusta si necesitas
+
         data = [[Paragraph(f"<b>{k}</b>", self.estilos["Normal"]), Paragraph(str(v), self.estilos["Normal"])] for k, v in data_dict.items()]
-        tabla = Table(data, colWidths=[130, 200])   
+        tabla = Table(data, colWidths=col_widths)   
 
         tabla.setStyle(TableStyle([
             ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
