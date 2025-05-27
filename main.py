@@ -5,8 +5,7 @@ from core.storage_info import StorageInfo
 from core.user_info import UserInfo
 from core.peripherals_info import PeripheralsInfo
 from core.system_info import SystemInfo
-
-from reportlab.platypus import Paragraph
+from core.process_info import ProcessInfo
 
 from data.pdf_generator import PDFGenerator
 
@@ -27,24 +26,26 @@ def main():
     software_info.print()
     info = software_info.getInfo()
     pdf.AddTable("Informacion del Usuario", 
-                 ["Sistema Operativo", "Arquitectura", "Fabricante", "Usuario Registrado"],
-                    [info["os"], info["architecture"], info["manufacturer"], info["registered_user"]])
+        ["Sistema Operativo", "Arquitectura", "Fabricante", "Usuario Registrado"],
+            [[info["os"], info["architecture"], info["manufacturer"], info["registered_user"]]])
+
 
     #Tabla de CPU
     cpu_info = CPUInfo()
     cpu_info.print()
     info = cpu_info.getInfo()
     pdf.AddTable("Informacion del CPU",
-                  ["Nombre", "Nucleos Fisicos", "Nucleos Logicos", "Frecuencia Maxima", "Uso Actual"],
-                    [info["nameCPU"], info["physicalCore"], info["logicalCore"], info["maxClockSpeed"], info["currentUsage"]])
+        ["Nombre", "Nucleos Fisicos", "Nucleos Logicos", "Frecuencia Maxima", "Uso Actual"],
+            [[info["nameCPU"], info["physicalCore"], info["logicalCore"], info["maxClockSpeed"], info["currentUsage"]]])
 
     #Tabla de Memoria RAM
     memory_info = MemoryInfo()
     memory_info.print()
     info = memory_info.getInfo()
     pdf.AddTable("Informacion de Memoria RAM", 
-                 ["Memoria Total", "Memoria Disponible", "Porcentaje Usado", "Memoria Usada", "Memoria Libre"],
-                    [info["totalMemory"], info["avaliableMemory"], info["percentUsedMemory"], info["usedMemory"], info["freeMemory"]])
+        ["Memoria Total", "Memoria Disponible", "Porcentaje Usado", "Memoria Usada", "Memoria Libre"],
+            [[info["totalMemory"], info["avaliableMemory"], info["percentUsedMemory"], info["usedMemory"], info["freeMemory"]]])
+
 
     #Tabla del Sistema
     system_info = SystemInfo()
@@ -89,6 +90,13 @@ def main():
     }
 
     pdf.AddKeyValueTable("Periféricos Conectados", peripherals_data_str)
+
+    #Tabla de Procesos
+    process_info = ProcessInfo()
+    process_info.print()
+    cabecera, filas = process_info.getInfo()
+    pdf.AddTable("Procesos con Mayor Consumo de Recursos", cabecera, filas)
+
 
     #Guardar Tablas
     pdf.SaveTable()
