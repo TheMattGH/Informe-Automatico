@@ -5,10 +5,13 @@ from core.storage_info import StorageInfo
 from core.user_info import UserInfo
 from core.peripherals_info import PeripheralsInfo
 from core.system_info import SystemInfo
-from core.process_info import ProcessInfo
+from core.process_info import ProcessInfo 
+from core.smart_status import DiskSmartInfo
 
+import time
 from data.pdf_generator import PDFGenerator
 
+start_time = time.time()
 def main():
 
     pdf = PDFGenerator()
@@ -77,6 +80,11 @@ def main():
         "Tipo": disk["media_type"]
     })
     
+    smart = DiskSmartInfo()
+    smart.print() 
+    data = smart.getInfo()
+    pdf.AddSmartStatus(data)        
+
     #Tabla Perifericos
     peripherals_info = PeripheralsInfo()
     peripherals_info.print()
@@ -103,3 +111,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+end_time = time.time()
+print(f"\n🕒 Tiempo de ejecución: {end_time - start_time:.2f} segundos")
