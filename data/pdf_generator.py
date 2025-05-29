@@ -3,6 +3,9 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, 
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
 
+from reportlab.graphics.shapes import Drawing, Rect, String
+from reportlab.graphics import renderPDF
+
 class PDFGenerator:
 
     def AddTitle(self, titulo="INFORME TÉCNICO DEL SISTEMA"):
@@ -50,6 +53,21 @@ class PDFGenerator:
 
         self.contenido.append(tabla)
         self.contenido.append(Spacer(1, 16))    
+
+
+    def AddSmartStatus(self, smart_info):
+        self.contenido.append(Paragraph("Estado SMART de los Discos", self.estilos["Title"]))
+
+        for disk, estado in smart_info.items():
+            if isinstance(estado, dict):
+                self.contenido.append(Paragraph(f"<b>🖴 {disk}</b>", self.estilos["Normal"]))
+                for k, v in estado.items():
+                    self.contenido.append(Paragraph(f"{k}: {v}", self.estilos["Normal"]))
+                self.contenido.append(Spacer(1, 8))
+            else:
+                self.contenido.append(Paragraph(f"🖴 {disk}: No se pudo obtener información SMART.", self.estilos["Normal"]))
+                self.contenido.append(Spacer(1, 8))
+
 
     def PageFooter(self, canvas, doc):
             canvas.saveState()
