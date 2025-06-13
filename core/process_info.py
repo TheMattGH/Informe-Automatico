@@ -42,7 +42,7 @@ class ProcessInfo:
                 f"{stats['mem_real']:.1f} MB"
             ])
 
-        return cabecera, filas
+        return cabecera, filas  
         
     def print(self):
         print("------ Procesos con Mayor Consumo de Recursos ------")
