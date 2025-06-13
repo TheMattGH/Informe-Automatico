@@ -1,21 +1,59 @@
 from reportlab.lib.pagesizes import A4
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer, Image
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
 
+from PIL import Image as PILImage
 from reportlab.graphics.shapes import Drawing, Rect, String
 from reportlab.graphics import renderPDF
-
+from reportlab.lib.units import cm
 class PDFGenerator:
 
-    def AddTitle(self, titulo="INFORME TÉCNICO DEL SISTEMA"):
-        self.contenido.append(Paragraph(f"<para align='center'><b><font size=16>{titulo}</font></b></para>", self.estilos["Normal"]))
-        self.contenido.append(Spacer(1, 24))
-
     def __init__(self, nombre_arhivo = "informe.pdf"):
-        self.pdf =  SimpleDocTemplate(nombre_arhivo, pagesize = A4)
+        self.pdf =  SimpleDocTemplate(
+            nombre_arhivo,
+            pagesize=A4,
+            rightMargin=2*cm,
+            leftMargin=2*cm,
+            topMargin=2.5*cm,
+            bottomMargin=2*cm        
+            )
         self.estilos = getSampleStyleSheet()
         self.contenido = []
+
+    def AddHeader(self, canvas, doc):
+        try:
+            canvas.saveState()
+
+            # Ruta y tamaño ajustado de la imagen
+            logo_path = "data/assets/LOGOBA.png" 
+            logo_width = 110   # Aumentado de 80
+            logo_height = 18   # Aumentado de 15
+
+            y_position = A4[1] - 60  # Más abajo que antes (antes era -40)
+
+            # Dibujar logo
+            canvas.drawImage(
+                logo_path,
+                doc.leftMargin,
+                y_position,
+                width=logo_width,
+                height=logo_height,
+                mask='auto'
+            )
+
+            # Dibujar título centrado verticalmente con respecto al logo
+            canvas.setFont("Helvetica-Bold", 12)
+            canvas.drawRightString(
+                A4[0] - doc.rightMargin,
+                y_position + logo_height / 4 + 2,
+                "INFORME TÉCNICO DEL SISTEMA"
+            )
+
+            canvas.restoreState()
+        except Exception as e:
+            print(f"[Error en encabezado]: {e}")
+
 
     def AddParagraph(self, texto, titulo = "Datos del Usuario"):
         self.contenido.append(Paragraph(f"<b>{titulo}</b>", self.estilos["Heading2"]))
@@ -38,7 +76,7 @@ class PDFGenerator:
     def AddKeyValueTable(self, titulo, data_dict):
         self.contenido.append(Paragraph(titulo, self.estilos["Title"]))
 
-        col_widths = [130, 200]  # ajusta si necesitas
+        col_widths = [130, 200] 
 
         data = [[Paragraph(f"<b>{k}</b>", self.estilos["Normal"]), Paragraph(str(v), self.estilos["Normal"])] for k, v in data_dict.items()]
         tabla = Table(data, colWidths=col_widths)   
@@ -75,6 +113,16 @@ class PDFGenerator:
             canvas.drawString(40, 30, "Informe generado automáticamente por el sistema.")
             canvas.drawRightString(A4[0] - 40, 30, f"Página {canvas.getPageNumber()}")
             canvas.restoreState()
-        
+    
+    def _withHeaderAndFooter(self, canvas, doc):
+        self.AddHeader(canvas, doc)
+        self.PageFooter(canvas, doc)
+
     def SaveTable(self):
-            self.pdf.build(self.contenido, onFirstPage = self.PageFooter, onLaterPages=self.PageFooter)
+            self.pdf.build(
+                self.contenido,
+                onFirstPage = self._withHeaderAndFooter, 
+                onLaterPages=self._withHeaderAndFooter)
+
+    
+        

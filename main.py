@@ -12,12 +12,10 @@ import time
 from data.pdf_generator import PDFGenerator
 
 start_time = time.time()
+
 def main():
 
     pdf = PDFGenerator()
-
-    #Titulo PDF
-    pdf.AddTitle()
 
     #Datos Usuario
     user_info = UserInfo()
@@ -100,10 +98,10 @@ def main():
     pdf.AddKeyValueTable("Periféricos Conectados", peripherals_data_str)
 
     #Tabla de Procesos
-    process_info = ProcessInfo()
-    process_info.print()
-    cabecera, filas = process_info.getInfo()
-    pdf.AddTable("Procesos con Mayor Consumo de Recursos", cabecera, filas)
+    # process_info = ProcessInfo()
+    # process_info.print()
+    # cabecera, filas = process_info.getInfo()
+    # pdf.AddTable("Procesos con Mayor Consumo de Recursos", cabecera, filas)
 
 
     #Guardar Tablas
