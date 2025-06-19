@@ -46,7 +46,11 @@ def main():
     pdf.AddTable("Informacion de Memoria RAM", 
         ["Memoria Total", "Memoria Disponible", "Porcentaje Usado", "Memoria Usada", "Memoria Libre"],
             [[info["totalMemory"], info["avaliableMemory"], info["percentUsedMemory"], info["usedMemory"], info["freeMemory"]]])
-
+    slotInfo = memory_info.getSlotInfo()
+    detalles_slot_multilinea = "\n".join(slotInfo["detailSlots"])
+    pdf.AddTable("Slots de Memoria RAM", 
+        ["Total Slots", "Slots Usados", "Slots Libres", "Detalles de Slots"], 
+                 [[slotInfo["totalSlots"], slotInfo["usedSlots"], slotInfo["freeSlots"], detalles_slot_multilinea]])
 
     #Tabla del Sistema
     system_info = SystemInfo()
