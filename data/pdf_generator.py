@@ -7,6 +7,13 @@ from PIL import Image as PILImage
 from reportlab.graphics.shapes import Drawing, Rect, String
 from reportlab.graphics import renderPDF
 from reportlab.lib.units import cm
+
+
+from reportlab.platypus import Preformatted, XPreformatted
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.enums import TA_LEFT
+import textwrap
+
 class PDFGenerator:
 
     def __init__(self, nombre_arhivo = "informe.pdf"):
@@ -15,7 +22,7 @@ class PDFGenerator:
             pagesize=A4,
             rightMargin=2*cm,
             leftMargin=2*cm,
-            topMargin=2.5*cm,
+            topMargin=2*cm,
             bottomMargin=2*cm        
             )
         self.estilos = getSampleStyleSheet()
@@ -61,6 +68,126 @@ class PDFGenerator:
             if line.strip():
                 self.contenido.append(Paragraph(line.strip(), self.estilos["Normal"]))
         self.contenido.append(Spacer(1, 12))
+
+
+    def generar_bloques_formato_fijo(self, secciones: dict):
+        estilo_parrafo = ParagraphStyle(
+            name="EstiloConsola",
+            fontName="Courier",
+            fontSize=9,
+            leading=11,
+            leftIndent=10,
+            spaceBefore=10,
+            spaceAfter=10,
+            alignment=TA_LEFT
+        )
+
+        def escapar(texto):
+            return texto.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+        def formatear_seccion(titulo, campos):
+            titulo_plano = titulo.upper()
+            ancho_total = 80
+            espacio_izq = (ancho_total - len(titulo_plano)) // 2
+            titulo_centrado = " " * espacio_izq + f"<b>{escapar(titulo_plano)}</b>"
+
+            bloque = f"{'-'*80}\n{titulo_centrado}\n{'-'*80}\n"
+            for clave, valor in campos.items():
+                clave_negrita = f"<b>{escapar(clave)}:</b>"
+                if isinstance(valor, list): 
+                    bloque += f"{clave_negrita}\n"
+                    for item in valor:
+                        for linea in textwrap.wrap(f"  - {item}", width=76):
+                            bloque += f"{escapar(linea)}\n"
+                else:
+                    linea = f"{clave_negrita} {escapar(str(valor))}"
+                    wrapped = textwrap.wrap(linea, width=76)
+                    bloque += "\n".join(wrapped) + "\n"
+            bloque += '-'*80 + '\n'
+            return bloque
+
+        from reportlab.platypus import XPreformatted  # Importar XPreformatted que sí acepta HTML simple
+        for titulo, campos in secciones.items():
+            bloque_texto = formatear_seccion(titulo, campos)
+            self.contenido.append(XPreformatted(bloque_texto, estilo_parrafo))
+
+
+
+    def agregar_tabla_procesos_texto(self, cabecera, filas):
+        estilo_tabla = ParagraphStyle(
+            name="TablaProcesosTextoPlano",
+            fontName="Courier",
+            fontSize=9,
+            leading=11,
+            leftIndent=10,
+            spaceBefore=10,
+            spaceAfter=10,
+            alignment=TA_LEFT
+        )
+
+        def escapar(texto):
+            return texto.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+        titulo = "PROCESOS CON MAYOR CONSUMO DE RECURSOS"
+        ancho_total = 80
+        espacio_izq = (ancho_total - len(titulo)) // 2
+        titulo_centrado = " " * espacio_izq + f"<b>{escapar(titulo)}</b>"
+
+        contenido = [
+            "-" * 80,
+            titulo_centrado,
+            "-" * 80,
+            f"<b>{escapar(cabecera[0]):<25} {cabecera[1]:<12} {cabecera[2]:<10} {cabecera[3]:<10} {cabecera[4]}</b>",
+            "-" * 80,
+        ]
+
+        for fila in filas:
+            contenido.append(f"{escapar(fila[0]):<25} {fila[1]:<12} {fila[2]:<10} {fila[3]:<10} {fila[4]}")
+
+        contenido.append("-" * 80)
+
+        self.contenido.append(XPreformatted("\n".join(contenido), estilo_tabla))
+
+
+    def agregar_perifericos_formato_tabla(self, perifericos: dict):
+
+        estilo = ParagraphStyle(
+            name="PerifericosTablaTexto",
+            fontName="Courier",
+            fontSize=9,
+            leading=11,
+            leftIndent=10,
+            spaceBefore=10,
+            spaceAfter=10,
+            alignment=TA_LEFT
+        )
+
+        def escapar(texto):
+            return texto.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+        ancho_total = 80
+        titulo = "PERIFÉRICOS CONECTADOS"
+        espacio_izq = (ancho_total - len(titulo)) // 2
+        titulo_centrado = " " * espacio_izq + f"<b>{titulo}</b>"
+
+        contenido = ["-" * 80, titulo_centrado, "-" * 80]
+        encabezado = f"<b>{'Categoría':<20} | Dispositivos</b>"
+        contenido.append(encabezado)
+        contenido.append("-" * 80)
+
+        for categoria, dispositivos in perifericos.items():
+            if isinstance(dispositivos, list):
+                dispositivos_str = ", ".join(dispositivos)
+            else:
+                dispositivos_str = str(dispositivos)
+
+            linea = f"{categoria:<20} | {dispositivos_str}"
+            contenido.append(escapar(linea))
+
+        contenido.append("-" * 80)
+
+        from reportlab.platypus import XPreformatted
+        self.contenido.append(XPreformatted("\n".join(contenido), estilo))
 
     def AddTable(self, titulo, cabecera, datos):    
         self.contenido.append(Paragraph(titulo, self.estilos["Title"]))
