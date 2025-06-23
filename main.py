@@ -211,7 +211,7 @@ def main():
 
 
     #Guardar Tablas
-    # pdf.SaveTable()
+    pdf.SaveTable()
 
 if __name__ == "__main__":
     main()

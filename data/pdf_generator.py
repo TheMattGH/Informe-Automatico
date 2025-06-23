@@ -13,6 +13,7 @@ from reportlab.platypus import Preformatted, XPreformatted
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.enums import TA_LEFT
 import textwrap
+import re
 
 class PDFGenerator:
 
@@ -165,6 +166,10 @@ class PDFGenerator:
         def escapar(texto):
             return texto.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
+        def negrita_titulos(texto):
+            # Pone en negrita palabras seguidas de dos puntos (ej: Fabricante:, Driver:)
+            return re.sub(r'(\b[\wáéíóúÁÉÍÓÚñÑ]+:)', r'<b>\1</b>', texto)
+
         ancho_total = 80
         titulo = "PERIFÉRICOS CONECTADOS"
         espacio_izq = (ancho_total - len(titulo)) // 2
@@ -181,8 +186,22 @@ class PDFGenerator:
             else:
                 dispositivos_str = str(dispositivos)
 
-            linea = f"{categoria:<20} | {dispositivos_str}"
-            contenido.append(escapar(linea))
+            # Aplica negrita solo a los títulos
+            dispositivos_str = negrita_titulos(escapar(dispositivos_str))
+
+            # Envolver el texto de dispositivos para que no se salga del margen
+            wrapped_lines = textwrap.wrap(dispositivos_str, width=55)
+            if wrapped_lines:
+                # Primera línea con la categoría en negrita
+                linea = f"<b>{escapar(categoria):<20}</b> | {wrapped_lines[0]}"
+                contenido.append(linea)
+                # Líneas siguientes solo con espacios en la columna de categoría
+                for extra_line in wrapped_lines[1:]:
+                    linea = f"{'':<20} | {extra_line}"
+                    contenido.append(linea)
+            else:
+                linea = f"<b>{escapar(categoria):<20}</b> | "
+                contenido.append(linea)
 
         contenido.append("-" * 80)
 
@@ -251,5 +270,4 @@ class PDFGenerator:
                 onFirstPage = self._withHeaderAndFooter, 
                 onLaterPages=self._withHeaderAndFooter)
 
-    
-        
+
