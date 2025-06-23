@@ -10,13 +10,14 @@ from core.smart_status import DiskSmartInfo
 
 import time
 from data.pdf_generator import PDFGenerator
+from pdfrw import PdfReader, PdfWriter, PageMerge
 
 start_time = time.time()
 
 def main():
 
-    pdf = PDFGenerator()
-
+    pdf = PDFGenerator(nombre_arhivo="informe_contenido.pdf")
+    pdf.agregar_titulo_centrado("INFORME TECNICO DEL SISTEMA")
     #Datos Usuario
     user_info = UserInfo()
     user_info.print()
@@ -110,7 +111,7 @@ def main():
 
     peripherals_data = peripherals_info.getInfo()
 
-    # Convertimos listas a texto tipo viñetas (o separados por coma si prefieres)
+    # Convertimos listas a texto tipo viñetas
     peripherals_data_formateado = {}
     for k, v in peripherals_data.items():
         if isinstance(v, list):
@@ -210,8 +211,23 @@ def main():
     # pdf.AddTable("Procesos con Mayor Consumo de Recursos", cabecera, filas)
 
 
+    def aplicar_plantilla_fondo(plantilla_path, informe_path, salida_path):
+            plantilla = PdfReader(plantilla_path).pages
+            informe = PdfReader(informe_path).pages
+
+            for i, page in enumerate(informe):
+                fondo = plantilla[0]  # Usa la primera página como fondo para todas
+                merger = PageMerge(page)
+                merger.add(fondo, prepend=True).render()
+
+            writer = PdfWriter()
+            writer.addpages(informe)
+            writer.write(salida_path)
+
     #Guardar Tablas
     pdf.SaveTable()
+    aplicar_plantilla_fondo("plantilla.pdf", "informe_contenido.pdf", "informe_final.pdf")
+
 
 if __name__ == "__main__":
     main()
