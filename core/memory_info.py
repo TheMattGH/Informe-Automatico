@@ -16,19 +16,24 @@ class MemoryInfo():
         }
     
     def getSlotInfo(self):
-        total_slots = 0
-        used_slots = 0
         slot_details = []
+        used_slots = 0
 
         try:
+            # Detectar número real de slots usando Win32_PhysicalMemoryArray
+            total_slots = 0
+            for mem_array in self.c.Win32_PhysicalMemoryArray():
+                total_slots += int(mem_array.MemoryDevices)
+
+            # Si no se pudo detectar, fallback a 4
+            if total_slots == 0:
+                total_slots = 4
+
             for mem in self.c.Win32_PhysicalMemory():
-                total_slots += 1
                 used_slots += 1
                 capacity = int(mem.Capacity) / (1024**3)
                 slot_details.append(f"{mem.DeviceLocator}: {capacity:.2f} GB")
 
-            # Asumimos 4 slots totales como valor máximo estimado
-            total_slots = max(used_slots, 4)
             free_slots = total_slots - used_slots
 
             return {
