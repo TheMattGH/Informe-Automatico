@@ -1,81 +1,41 @@
 from reportlab.lib.pagesizes import A4
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib import colors
-
-from PIL import Image as PILImage
-from reportlab.graphics.shapes import Drawing, Rect, String
-from reportlab.graphics import renderPDF
 from reportlab.lib.units import cm
-
-
-from reportlab.platypus import Preformatted, XPreformatted, Spacer, KeepTogether
+from reportlab.platypus import XPreformatted, Spacer, KeepTogether
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.enums import TA_LEFT, TA_CENTER
 import textwrap
 import re
-
-
 class PDFGenerator:
 
-    def __init__(self, nombre_arhivo = "informe.pdf"):
+    #Definicion de Formato del documento
+    def __init__(self, document_name = "informe.pdf"):
         self.pdf =  SimpleDocTemplate(
-            nombre_arhivo,
+            document_name,
             pagesize=A4,
             rightMargin=2*cm,
             leftMargin=2*cm,
             topMargin=3*cm,
             bottomMargin=2*cm        
             )
-        self.estilos = getSampleStyleSheet()
-        self.contenido = []
+        self.styles = getSampleStyleSheet()
+        self.content = []
 
-    # def AddHeader(self, canvas, doc):
-    #     try:
-    #         canvas.saveState()
-
-    #         # Ruta y tamaño ajustado de la imagen
-    #         logo_path = "data/assets/LOGOBA.png" 
-    #         logo_width = 110   # Aumentado de 80
-    #         logo_height = 18   # Aumentado de 15
-
-    #         y_position = A4[1] - 60  # Más abajo que antes (antes era -40)
-
-    #         # Dibujar logo
-    #         canvas.drawImage(
-    #             logo_path,
-    #             doc.leftMargin,
-    #             y_position,
-    #             width=logo_width,
-    #             height=logo_height,
-    #             mask='auto'
-    #         )
-
-    #         # Dibujar título centrado verticalmente con respecto al logo
-    #         canvas.setFont("Helvetica-Bold", 12)
-    #         canvas.drawRightString(
-    #             A4[0] - doc.rightMargin,
-    #             y_position + logo_height / 4 + 2,
-    #             "INFORME TÉCNICO DEL SISTEMA"
-    #         )
-
-    #         canvas.restoreState()
-    #     except Exception as e:
-    #         print(f"[Error en encabezado]: {e}")
-
-    
-    def agregar_titulo_centrado(self, texto):
-            estilo_titulo = ParagraphStyle(
-                name="TituloCentrado",
+    #Generacion del Titulo
+    def add_tittle(self, texto):
+            tittle_style = ParagraphStyle(
+                name="Titulo",
                 fontName="Courier-Bold",
                 fontSize=13,
                 alignment=TA_CENTER,
                 spaceAfter=12
             )
-            self.contenido.append(Paragraph(texto, estilo_titulo))
+            self.content.append(Paragraph(texto, tittle_style))
 
-    def AddParagraph(self, texto, titulo="Datos del Informe"):
-        estilo_titulo = ParagraphStyle(
+    #Generacion de los datos del Informe en formato de parrafo
+    def add_paragraph(self, text, tittle="Datos del Informe"):
+        title_style = ParagraphStyle(
             name="TituloUsuario",
             fontName="Courier-Bold",
             fontSize=11,
@@ -86,7 +46,7 @@ class PDFGenerator:
             alignment=TA_LEFT
         )
 
-        estilo_html = ParagraphStyle(
+        html_style = ParagraphStyle(
             name="TextoHTML",
             fontSize=9,
             fontName="Courier",
@@ -97,16 +57,16 @@ class PDFGenerator:
             alignment=TA_LEFT
         )
 
-        # Añade el título como un párrafo
-        self.contenido.append(Paragraph(titulo, estilo_titulo))
+        # Añade el titulo como un párrafo
+        self.content.append(Paragraph(tittle, title_style))
 
-        # Añade el contenido HTML con estilo personalizado
-        self.contenido.append(Paragraph(texto, estilo_html))
-        self.contenido.append(Spacer(1, 4))
+        # Añade el contenido HTML
+        self.content.append(Paragraph(text, html_style))
+        self.content.append(Spacer(1, 4))
 
-
-    def generar_bloques_formato_fijo(self, secciones: dict):
-        estilo_parrafo = ParagraphStyle(
+    #Generar las tablas de Informacion
+    def generate_blocks(self, sections: dict):
+        paragraph_style = ParagraphStyle(
             name="EstiloConsola",
             fontName="Courier",
             fontSize=9,
@@ -117,37 +77,36 @@ class PDFGenerator:
             alignment=TA_LEFT
         )
 
-        def formatear_seccion(titulo, campos):
-            titulo_plano = titulo.upper()
-            ancho_total = 80
-            espacio_izq = (ancho_total - len(titulo_plano)) // 2
-            titulo_centrado = " " * espacio_izq + titulo_plano
+        def format_section(tittle, fields):
+            flat_tittle = tittle.upper()
+            total_width = 80
+            left_space = (total_width - len(flat_tittle)) // 2
+            center_tittle = " " * left_space + flat_tittle
 
-            bloque = f"{'-'*ancho_total}\n<b>{titulo_centrado}</b>\n{'-'*ancho_total}\n"
-            for clave, valor in campos.items():
-                clave_negrita = f"<b>{clave}:</b>"
-                if isinstance(valor, list): 
-                    bloque += f"{clave_negrita}\n"
-                    for item in valor:
-                        for linea in textwrap.wrap(f"  - {item}", width=76):
-                            bloque += f"{linea}\n"
+            bloque = f"{'-'*total_width}\n<b>{center_tittle}</b>\n{'-'*total_width}\n"
+            for key, value in fields.items():
+                bold_keys = f"<b>{key}:</b>"
+                if isinstance(value, list): 
+                    bloque += f"{bold_keys}\n"
+                    for item in value:
+                        for line in textwrap.wrap(f"  - {item}", width=76):
+                            bloque += f"{line}\n"
                 else:
-                    linea = f"{clave_negrita} {str(valor)}"
-                    wrapped = textwrap.wrap(linea, width=76)
+                    line = f"{bold_keys} {str(value)}"
+                    wrapped = textwrap.wrap(line, width=76)
                     bloque += "\n".join(wrapped) + "\n"
-            bloque += '-'*ancho_total + '\n'
+            bloque += '-'*total_width + '\n'
             return bloque
 
-        for titulo, campos in secciones.items():
-            bloque_texto = formatear_seccion(titulo, campos)
-            bloque = XPreformatted(bloque_texto, estilo_parrafo)
-            self.contenido.append(KeepTogether([bloque, Spacer(1, 6)]))
-
-
-
-    def agregar_tabla_procesos_texto(self, cabecera, filas):
-        estilo_tabla = ParagraphStyle(
-            name="TablaProcesosTextoPlano",
+        for tittle, fileds in sections.items():
+            block_text = format_section(tittle, fileds)
+            block = XPreformatted(block_text, paragraph_style)
+            self.content.append(KeepTogether([block, Spacer(1, 6)]))
+    
+    #Generar tabla de procesos del sistema
+    def add_processes_block(self, header, rows):
+        table_style = ParagraphStyle(
+            name="TablaProcesos",
             fontName="Courier",
             fontSize=9,
             leading=11,
@@ -157,30 +116,30 @@ class PDFGenerator:
             alignment=TA_LEFT
         )
 
-        ancho_total = 80
-        contenido = []
-        titulo = "<b>PROCESOS CON MAYOR CONSUMO DE RECURSOS</b>"
-        contenido.append("-" * ancho_total)
-        contenido.append(titulo.center(ancho_total + len(titulo) - len("PROCESOS CON MAYOR CONSUMO DE RECURSOS")))
-        contenido.append("-" * ancho_total)
+        total_width = 80
+        content = []
+        tittle = "<b>PROCESOS CON MAYOR CONSUMO DE RECURSOS</b>"
+        content.append("-" * total_width)
+        content.append(tittle.center(total_width + len(tittle) - len("PROCESOS CON MAYOR CONSUMO DE RECURSOS")))
+        content.append("-" * total_width)
         # Cabecera en negrita
-        contenido.append(
-            f"<b>{cabecera[0]:<25} {cabecera[1]:<12} {cabecera[2]:<10} {cabecera[3]:<10} {cabecera[4]}</b>"
+        content.append(
+            f"<b>{header[0]:<25} {header[1]:<12} {header[2]:<10} {header[3]:<10} {header[4]}</b>"
         )
-        contenido.append("-" * ancho_total)
+        content.append("-" * total_width)
         # Filas
-        for fila in filas:
+        for row in rows:
             # Puedes poner en negrita solo los campos que sean subtítulo si lo deseas
-            contenido.append(f"{fila[0]:<25} {fila[1]:<12} {fila[2]:<10} {fila[3]:<10} {fila[4]}")
-        contenido.append("-" * ancho_total)
+            content.append(f"{row[0]:<25} {row[1]:<12} {row[2]:<10} {row[3]:<10} {row[4]}")
+        content.append("-" * total_width)
 
-        bloque = XPreformatted("\n".join(contenido), estilo_tabla)
-        self.contenido.append(KeepTogether([bloque, Spacer(1, 6)]))
+        block = XPreformatted("\n".join(content), table_style)
+        self.content.append(KeepTogether([block, Spacer(1, 6)]))
 
-
-    def agregar_perifericos_formato_tabla(self, perifericos: dict):
-        estilo = ParagraphStyle(
-            name="PerifericosTablaTexto",
+    #Generar tabla de perifericos
+    def add_peripherals_block(self, peripherals: dict):
+        style = ParagraphStyle(
+            name="PerifericosTabla",
             fontName="Courier",
             fontSize=9,
             leading=11,
@@ -190,104 +149,53 @@ class PDFGenerator:
             alignment=TA_LEFT
         )
 
-        ancho_total = 80
-        contenido = []
-        titulo = "<b>PERIFÉRICOS CONECTADOS</b>"
-        contenido.append("-" * ancho_total)
-        contenido.append(titulo.center(ancho_total + len(titulo) - len("PERIFÉRICOS CONECTADOS")))
-        contenido.append("-" * ancho_total)
-        contenido.append(f"<b>{'Categoría':<20} | Dispositivos</b>")
-        contenido.append("-" * ancho_total)
+        total_width = 80
+        content = []
+        tittle = "<b>PERIFÉRICOS CONECTADOS</b>"
+        content.append("-" * total_width)
+        content.append(tittle.center(total_width + len(tittle) - len("PERIFÉRICOS CONECTADOS")))
+        content.append("-" * total_width)
+        content.append(f"<b>{'Categoría':<20} | Dispositivos</b>")
+        content.append("-" * total_width)
 
-        for categoria, dispositivos in perifericos.items():
-            if isinstance(dispositivos, list):
-                dispositivos_str = ", ".join(dispositivos)
+        for category, devices in peripherals.items():
+            if isinstance(peripherals, list):
+                devices_str = ", ".join(peripherals)
             else:
-                dispositivos_str = str(dispositivos)
-            # Negrita solo en títulos tipo "Fabricante:", "Driver:", etc.
-            dispositivos_str = re.sub(r'(\b[\wáéíóúÁÉÍÓÚñÑ]+:)', r'<b>\1</b>', dispositivos_str)
-            wrapped_lines = textwrap.wrap(dispositivos_str, width=ancho_total - 23)
+                devices_str = str(devices)
+            devices_str = re.sub(r'(\b[\wáéíóúÁÉÍÓÚñÑ]+:)', r'<b>\1</b>', devices_str)
+            wrapped_lines = textwrap.wrap(devices_str, width=total_width - 23)
             if wrapped_lines:
-                # Primera línea con la categoría en negrita
-                contenido.append(f"<b>{categoria:<20}</b> | {wrapped_lines[0]}")
-                # Líneas siguientes solo con espacios en la columna de categoría
+                content.append(f"<b>{category:<20}</b> | {wrapped_lines[0]}")
                 for extra_line in wrapped_lines[1:]:
-                    contenido.append(f"{'':<20} | {extra_line}")
+                    content.append(f"{'':<20} | {extra_line}")
             else:
-                contenido.append(f"<b>{categoria:<20}</b> | ")
+                content.append(f"<b>{category:<20}</b> | ")
 
-        contenido.append("-" * ancho_total)
+        content.append("-" * total_width)
 
-        bloque = XPreformatted("\n".join(contenido), estilo)
-        self.contenido.append(KeepTogether([bloque, Spacer(1, 6)]))
+        block = XPreformatted("\n".join(content), style)
+        self.content.append(KeepTogether([block, Spacer(1, 6)]))
 
-
-    # def AddTable(self, titulo, cabecera, datos):    
-    #     self.contenido.append(Paragraph(titulo, self.estilos["Title"]))
-    #     tabla = Table([cabecera] + datos, repeatRows=1)
-    #     tabla.setStyle(TableStyle([
-    #         ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-    #         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-    #         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-    #         ('GRID', (0, 0), (-1, -1), 1, colors.black)
-    #     ]))
-    #     self.contenido.append(tabla)
-
-    # def AddKeyValueTable(self, titulo, data_dict):
-    #     self.contenido.append(Paragraph(titulo, self.estilos["Title"]))
-
-    #     col_widths = [130, 200] 
-
-    #     data = [[Paragraph(f"<b>{k}</b>", self.estilos["Normal"]), Paragraph(str(v), self.estilos["Normal"])] for k, v in data_dict.items()]
-    #     tabla = Table(data, colWidths=col_widths)   
-
-    #     tabla.setStyle(TableStyle([
-    #         ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
-    #         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-    #         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-    #         ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
-    #         ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
-    #     ]))
-
-    #     self.contenido.append(tabla)
-    #     self.contenido.append(Spacer(1, 16))    
-
-
-    # def AddSmartStatus(self, smart_info):
-    #     self.contenido.append(Paragraph("Estado SMART de los Discos", self.estilos["Title"]))
-
-    #     for disk, estado in smart_info.items():
-    #         if isinstance(estado, dict):
-    #             self.contenido.append(Paragraph(f"<b>🖴 {disk}</b>", self.estilos["Normal"]))
-    #             for k, v in estado.items():
-    #                 self.contenido.append(Paragraph(f"{k}: {v}", self.estilos["Normal"]))
-    #             self.contenido.append(Spacer(1, 8))
-    #         else:
-    #             self.contenido.append(Paragraph(f"🖴 {disk}: No se pudo obtener información SMART.", self.estilos["Normal"]))
-    #             self.contenido.append(Spacer(1, 8))
-
-
-    def PageFooter(self, canvas, doc):
+    def page_footer(self, canvas, doc):
         canvas.saveState()
         canvas.setFont('Courier-Bold', 8)
 
-        # Usar márgenes definidos en el documento
         left_margin = doc.leftMargin
         right_margin = doc.rightMargin
         page_width = A4[0]
 
-        # Alinear texto izquierdo con el inicio de los cuadros
         canvas.drawString(left_margin, 30, "Informe generado automáticamente por el sistema.")
 
-        # Alinear número de página con el final de los cuadros
         canvas.drawRightString(page_width - right_margin, 30, f"Página {canvas.getPageNumber()}")
 
         canvas.restoreState()
 
-    def SaveTable(self):
+    #Guardar documento pdf
+    def save_document(self):
             self.pdf.build(
-                self.contenido,
-                onFirstPage = self.PageFooter, 
-                onLaterPages=self.PageFooter)
+                self.content,
+                onFirstPage = self.page_footer, 
+                onLaterPages=self.page_footer)
 
 
