@@ -1,5 +1,5 @@
 from reportlab.lib.pagesizes import A4
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer, Image
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
 
@@ -9,7 +9,7 @@ from reportlab.graphics import renderPDF
 from reportlab.lib.units import cm
 
 
-from reportlab.platypus import Preformatted, XPreformatted
+from reportlab.platypus import Preformatted, XPreformatted, Spacer, KeepTogether
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.enums import TA_LEFT, TA_CENTER
 import textwrap
@@ -74,7 +74,7 @@ class PDFGenerator:
             )
             self.contenido.append(Paragraph(texto, estilo_titulo))
 
-    def AddParagraph(self, texto, titulo="Datos del Usuario"):
+    def AddParagraph(self, texto, titulo="Datos del Informe"):
         estilo_titulo = ParagraphStyle(
             name="TituloUsuario",
             fontName="Courier-Bold",
@@ -112,38 +112,36 @@ class PDFGenerator:
             fontSize=9,
             leading=11,
             leftIndent=10,
-            spaceBefore=10,
-            spaceAfter=10,
+            spaceBefore=5,
+            spaceAfter=5,
             alignment=TA_LEFT
         )
-
-        def escapar(texto):
-            return texto.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
         def formatear_seccion(titulo, campos):
             titulo_plano = titulo.upper()
             ancho_total = 80
             espacio_izq = (ancho_total - len(titulo_plano)) // 2
-            titulo_centrado = " " * espacio_izq + f"<b>{escapar(titulo_plano)}</b>"
+            titulo_centrado = " " * espacio_izq + titulo_plano
 
-            bloque = f"{'-'*80}\n{titulo_centrado}\n{'-'*80}\n"
+            bloque = f"{'-'*ancho_total}\n<b>{titulo_centrado}</b>\n{'-'*ancho_total}\n"
             for clave, valor in campos.items():
-                clave_negrita = f"<b>{escapar(clave)}:</b>"
+                clave_negrita = f"<b>{clave}:</b>"
                 if isinstance(valor, list): 
                     bloque += f"{clave_negrita}\n"
                     for item in valor:
                         for linea in textwrap.wrap(f"  - {item}", width=76):
-                            bloque += f"{escapar(linea)}\n"
+                            bloque += f"{linea}\n"
                 else:
-                    linea = f"{clave_negrita} {escapar(str(valor))}"
+                    linea = f"{clave_negrita} {str(valor)}"
                     wrapped = textwrap.wrap(linea, width=76)
                     bloque += "\n".join(wrapped) + "\n"
-            bloque += '-'*80 + '\n'
+            bloque += '-'*ancho_total + '\n'
             return bloque
 
         for titulo, campos in secciones.items():
             bloque_texto = formatear_seccion(titulo, campos)
-            self.contenido.append(XPreformatted(bloque_texto, estilo_parrafo))
+            bloque = XPreformatted(bloque_texto, estilo_parrafo)
+            self.contenido.append(KeepTogether([bloque, Spacer(1, 6)]))
 
 
 
@@ -154,92 +152,75 @@ class PDFGenerator:
             fontSize=9,
             leading=11,
             leftIndent=10,
-            spaceBefore=10,
-            spaceAfter=10,
+            spaceBefore=5,
+            spaceAfter=5,
             alignment=TA_LEFT
         )
 
-        def escapar(texto):
-            return texto.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-
-        titulo = "PROCESOS CON MAYOR CONSUMO DE RECURSOS"
         ancho_total = 80
-        espacio_izq = (ancho_total - len(titulo)) // 2
-        titulo_centrado = " " * espacio_izq + f"<b>{escapar(titulo)}</b>"
-
-        contenido = [
-            "-" * 80,
-            titulo_centrado,
-            "-" * 80,
-            f"<b>{escapar(cabecera[0]):<25} {cabecera[1]:<12} {cabecera[2]:<10} {cabecera[3]:<10} {cabecera[4]}</b>",
-            "-" * 80,
-        ]
-
+        contenido = []
+        titulo = "<b>PROCESOS CON MAYOR CONSUMO DE RECURSOS</b>"
+        contenido.append("-" * ancho_total)
+        contenido.append(titulo.center(ancho_total + len(titulo) - len("PROCESOS CON MAYOR CONSUMO DE RECURSOS")))
+        contenido.append("-" * ancho_total)
+        # Cabecera en negrita
+        contenido.append(
+            f"<b>{cabecera[0]:<25} {cabecera[1]:<12} {cabecera[2]:<10} {cabecera[3]:<10} {cabecera[4]}</b>"
+        )
+        contenido.append("-" * ancho_total)
+        # Filas
         for fila in filas:
-            contenido.append(f"{escapar(fila[0]):<25} {fila[1]:<12} {fila[2]:<10} {fila[3]:<10} {fila[4]}")
+            # Puedes poner en negrita solo los campos que sean subtítulo si lo deseas
+            contenido.append(f"{fila[0]:<25} {fila[1]:<12} {fila[2]:<10} {fila[3]:<10} {fila[4]}")
+        contenido.append("-" * ancho_total)
 
-        contenido.append("-" * 80)
-
-        self.contenido.append(XPreformatted("\n".join(contenido), estilo_tabla))
+        bloque = XPreformatted("\n".join(contenido), estilo_tabla)
+        self.contenido.append(KeepTogether([bloque, Spacer(1, 6)]))
 
 
     def agregar_perifericos_formato_tabla(self, perifericos: dict):
-
         estilo = ParagraphStyle(
             name="PerifericosTablaTexto",
             fontName="Courier",
             fontSize=9,
             leading=11,
             leftIndent=10,
-            spaceBefore=10,
-            spaceAfter=10,
+            spaceBefore=5,
+            spaceAfter=5,
             alignment=TA_LEFT
         )
 
-        def escapar(texto):
-            return texto.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-
-        def negrita_titulos(texto):
-            # Pone en negrita palabras seguidas de dos puntos (ej: Fabricante:, Driver:)
-            return re.sub(r'(\b[\wáéíóúÁÉÍÓÚñÑ]+:)', r'<b>\1</b>', texto)
-
         ancho_total = 80
-        titulo = "PERIFÉRICOS CONECTADOS"
-        espacio_izq = (ancho_total - len(titulo)) // 2
-        titulo_centrado = " " * espacio_izq + f"<b>{titulo}</b>"
-
-        contenido = ["-" * 80, titulo_centrado, "-" * 80]
-        encabezado = f"<b>{'Categoría':<20} | Dispositivos</b>"
-        contenido.append(encabezado)
-        contenido.append("-" * 80)
+        contenido = []
+        titulo = "<b>PERIFÉRICOS CONECTADOS</b>"
+        contenido.append("-" * ancho_total)
+        contenido.append(titulo.center(ancho_total + len(titulo) - len("PERIFÉRICOS CONECTADOS")))
+        contenido.append("-" * ancho_total)
+        contenido.append(f"<b>{'Categoría':<20} | Dispositivos</b>")
+        contenido.append("-" * ancho_total)
 
         for categoria, dispositivos in perifericos.items():
             if isinstance(dispositivos, list):
                 dispositivos_str = ", ".join(dispositivos)
             else:
                 dispositivos_str = str(dispositivos)
-
-            # Aplica negrita solo a los títulos
-            dispositivos_str = negrita_titulos(escapar(dispositivos_str))
-
-            # Envolver el texto de dispositivos para que no se salga del margen
-            wrapped_lines = textwrap.wrap(dispositivos_str, width=55)
+            # Negrita solo en títulos tipo "Fabricante:", "Driver:", etc.
+            dispositivos_str = re.sub(r'(\b[\wáéíóúÁÉÍÓÚñÑ]+:)', r'<b>\1</b>', dispositivos_str)
+            wrapped_lines = textwrap.wrap(dispositivos_str, width=ancho_total - 23)
             if wrapped_lines:
                 # Primera línea con la categoría en negrita
-                linea = f"<b>{escapar(categoria):<20}</b> | {wrapped_lines[0]}"
-                contenido.append(linea)
+                contenido.append(f"<b>{categoria:<20}</b> | {wrapped_lines[0]}")
                 # Líneas siguientes solo con espacios en la columna de categoría
                 for extra_line in wrapped_lines[1:]:
-                    linea = f"{'':<20} | {extra_line}"
-                    contenido.append(linea)
+                    contenido.append(f"{'':<20} | {extra_line}")
             else:
-                linea = f"<b>{escapar(categoria):<20}</b> | "
-                contenido.append(linea)
+                contenido.append(f"<b>{categoria:<20}</b> | ")
 
-        contenido.append("-" * 80)
+        contenido.append("-" * ancho_total)
 
-        from reportlab.platypus import XPreformatted
-        self.contenido.append(XPreformatted("\n".join(contenido), estilo))
+        bloque = XPreformatted("\n".join(contenido), estilo)
+        self.contenido.append(KeepTogether([bloque, Spacer(1, 6)]))
+
 
     # def AddTable(self, titulo, cabecera, datos):    
     #     self.contenido.append(Paragraph(titulo, self.estilos["Title"]))
