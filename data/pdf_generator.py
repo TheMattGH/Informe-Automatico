@@ -34,7 +34,7 @@ class PDFGenerator:
             self.content.append(Paragraph(texto, tittle_style))
 
     #Generacion de los datos del Informe en formato de parrafo
-    def add_paragraph(self, text, tittle="Datos del Informe"):
+    def add_paragraph(self, text, tittle):
         title_style = ParagraphStyle(
             name="TituloUsuario",
             fontName="Courier-Bold",
@@ -176,6 +176,17 @@ class PDFGenerator:
 
         block = XPreformatted("\n".join(content), style)
         self.content.append(KeepTogether([block, Spacer(1, 6)]))
+
+
+    def agregar_recomendaciones(self, recomendaciones):
+        self.content.append(Spacer(1, 12))
+        self.content.append(Paragraph("<b>Recomendaciones del Sistema</b>", self.styles["Heading2"]))
+        if not recomendaciones:
+            self.content.append(Paragraph("No se detectaron problemas significativos en el sistema.", self.styles["Normal"]))
+        else:
+            for rec in recomendaciones:
+                self.content.append(Paragraph(rec, self.styles["Normal"]))
+
 
     def page_footer(self, canvas, doc):
         canvas.saveState()

@@ -6,6 +6,7 @@ from core.user_info import UserInfo
 from core.peripherals_info import PeripheralsInfo
 from core.system_info import SystemInfo
 from core.process_info import ProcessInfo 
+from core.recomendations import generar_recomendaciones
 
 import time
 from data.pdf_generator import PDFGenerator
@@ -22,7 +23,7 @@ def main():
     #Datos Informe
     user_info = UserInfo()
     user_info.print()
-    pdf.add_paragraph(user_info.getText())
+    pdf.add_paragraph(user_info.getText(), "Datos del Informe")
 
     #Creacion de las tablas de Informacion
     software_info = SoftwareInfo().getInfo()
@@ -99,6 +100,10 @@ def main():
     pdf.generate_blocks(sections)
     pdf.add_peripherals_block(peripherals_data_formatted)
     pdf.add_processes_block(header, rows)
+    recomendaciones = generar_recomendaciones(cpu_info, ram_info, disks, rows)
+    recomendaciones_html = "<br/>".join(f"• {r}" for r in recomendaciones)
+    pdf.add_paragraph(recomendaciones_html, "Recomendaciones del Sistema")
+
 
     #Aplicar la plantilla sobre el informe generado
     def apply_template(plantilla_path, informe_path, salida_path):
