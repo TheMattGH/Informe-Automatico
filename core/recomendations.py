@@ -1,5 +1,5 @@
 
-def generar_recomendaciones(cpu_info, ram_info, storage_info, processes):
+def generate_recomendations(cpu_info, ram_info, storage_info, processes):
     recomendaciones = []
 
     # Recomendaciones sobre CPU

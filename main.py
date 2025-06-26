@@ -6,18 +6,19 @@ from core.user_info import UserInfo
 from core.peripherals_info import PeripheralsInfo
 from core.system_info import SystemInfo
 from core.process_info import ProcessInfo 
-from core.recomendations import generar_recomendaciones
+from core.recomendations import generate_recomendations
 
 import time
-from data.pdf_generator import PDFGenerator
+from utils.pdf_generator import PDFGenerator
 from pdfrw import PdfReader, PdfWriter, PageMerge
+from pathlib import Path
 
 start_time = time.time()
 
 def main():
 
     #Generar pdf
-    pdf = PDFGenerator(document_name="informe_contenido.pdf")
+    pdf = PDFGenerator("reports/informe_contenido.pdf")
     pdf.add_tittle("INFORME TECNICO DEL SISTEMA")
 
     #Datos Informe
@@ -100,24 +101,41 @@ def main():
     pdf.generate_blocks(sections)
     pdf.add_peripherals_block(peripherals_data_formatted)
     pdf.add_processes_block(header, rows)
-    recomendaciones = generar_recomendaciones(cpu_info, ram_info, disks, rows)
+    recomendaciones = generate_recomendations(cpu_info, ram_info, disks, rows)
     recomendaciones_html = "<br/>".join(f"• {r}" for r in recomendaciones)
     pdf.add_paragraph(recomendaciones_html, "Recomendaciones del Sistema")
 
 
     #Aplicar la plantilla sobre el informe generado
-    def apply_template(plantilla_path, informe_path, salida_path):
-            plantilla = PdfReader(plantilla_path).pages
-            informe = PdfReader(informe_path).pages
+    def apply_template(template_path, report_path, final_report_path):
+            
+        # Definir rutas
+        base_dir = Path(__file__).resolve().parent
+        reports_dir = base_dir / "reports"
+        data_dir = base_dir / "data"
 
-            for i, page in enumerate(informe):
-                fondo = plantilla[0]  # Usa la primera pagina como fondo para todas
-                merger = PageMerge(page)
-                merger.add(fondo, prepend=True).render()
+        # Asegurar que el directorio de reportes existe
+        reports_dir.mkdir(parents=True, exist_ok=True)
 
-            writer = PdfWriter()
-            writer.addpages(informe)
-            writer.write(salida_path)
+        # Rutas a los archivos
+        template_path = data_dir / "plantilla.pdf"
+        report_path = reports_dir / "informe_contenido.pdf"
+        final_report_path = reports_dir / "informe_final.pdf"
+
+        # Cargar PDFs
+        template = PdfReader(str(template_path)).pages
+        report = PdfReader(str(report_path)).pages
+
+        # Aplicar plantilla
+        for page in report:
+            fondo = template[0]
+            merger = PageMerge(page)
+            merger.add(fondo, prepend=True).render()
+
+        # Guardar PDF final
+        writer = PdfWriter()
+        writer.addpages(report)
+        writer.write(str(final_report_path))
 
     #Guardar pdf
     pdf.save_document()
