@@ -15,14 +15,17 @@ from pathlib import Path
 
 start_time = time.time()
 
-def main():
+def main(names=None, department=None, progress=None):
+    # Crear el directorio de reportes si no existe
+    reports_dir = Path(__file__).resolve().parent / "reports"
+    reports_dir.mkdir(parents=True, exist_ok=True)
 
     #Generar pdf
-    pdf = PDFGenerator("reports/informe_contenido.pdf")
+    pdf = PDFGenerator(str(reports_dir / "informe_contenido.pdf"))
     pdf.add_tittle("INFORME TECNICO DEL SISTEMA")
 
     #Datos Informe
-    user_info = UserInfo()
+    user_info = UserInfo(names, department)
     user_info.print()
     pdf.add_paragraph(user_info.getText(), "Datos del Informe")
 
@@ -105,42 +108,39 @@ def main():
     recomendaciones_html = "<br/>".join(f"• {r}" for r in recomendaciones)
     pdf.add_paragraph(recomendaciones_html, "Recomendaciones del Sistema")
 
-
-    #Aplicar la plantilla sobre el informe generado
-    def apply_template(template_path, report_path, final_report_path):
-            
-        # Definir rutas
-        base_dir = Path(__file__).resolve().parent
-        reports_dir = base_dir / "reports"
-        data_dir = base_dir / "data"
-
-        # Asegurar que el directorio de reportes existe
-        reports_dir.mkdir(parents=True, exist_ok=True)
-
-        # Rutas a los archivos
-        template_path = data_dir / "plantilla.pdf"
-        report_path = reports_dir / "informe_contenido.pdf"
-        final_report_path = reports_dir / "informe_final.pdf"
-
-        # Cargar PDFs
-        template = PdfReader(str(template_path)).pages
-        report = PdfReader(str(report_path)).pages
-
-        # Aplicar plantilla
-        for page in report:
-            fondo = template[0]
-            merger = PageMerge(page)
-            merger.add(fondo, prepend=True).render()
-
-        # Guardar PDF final
-        writer = PdfWriter()
-        writer.addpages(report)
-        writer.write(str(final_report_path))
-
     #Guardar pdf
     pdf.save_document()
-    apply_template("plantilla.pdf", "informe_contenido.pdf", "informe_final.pdf")
+    apply_template()
 
+    #Aplicar la plantilla sobre el informe generado
+def apply_template():
+    # Definir rutas
+    base_dir = Path(__file__).resolve().parent.parent  # Subir un nivel para llegar a C:\Proyecto
+    reports_dir = base_dir / "src" / "reports"
+    data_dir = base_dir / "data"
+
+    # Asegurar que el directorio de reportes existe
+    reports_dir.mkdir(parents=True, exist_ok=True)
+
+    # Rutas a los archivos
+    template_path = data_dir / "plantilla.pdf"
+    report_path = reports_dir / "informe_contenido.pdf"
+    final_report_path = reports_dir / "informe_final.pdf"
+
+    # Cargar PDFs
+    template = PdfReader(str(template_path)).pages
+    report = PdfReader(str(report_path)).pages
+
+    # Aplicar plantilla
+    for page in report:
+        fondo = template[0]
+        merger = PageMerge(page)
+        merger.add(fondo, prepend=True).render()
+
+    # Guardar PDF final
+    writer = PdfWriter()
+    writer.addpages(report)
+    writer.write(str(final_report_path))
 
 if __name__ == "__main__":
     main()

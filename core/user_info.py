@@ -3,7 +3,10 @@ from datetime import datetime
 import psutil
 
 class UserInfo:
-    def __init__(self):
+    def __init__(self, names = None, departament = None):
+        self.names = names
+        self.department = departament
+
         self.username = self.getLoggedUser()
         self.datetime_now = self.getDatetime()
         self.location = self.getLocation()
@@ -25,6 +28,8 @@ class UserInfo:
     
     def getInfo(self):
         return {
+            "names": self.names,
+            "department": self.department,
             "date": self.datetime_now,
             "user": self.username,
             "location": self.location
@@ -32,6 +37,8 @@ class UserInfo:
     
     def getText(self):
         return (
+            f"<b>Nombre:</b> {self.names}<br/>"
+            f"<b>Departamento:</b> {self.department}<br/>"
             f"<b>Fecha y hora de generación del informe:</b> {self.datetime_now}<br/>"
             f"<b>Usuario logueado actualmente:</b> {self.username}<br/>"
             f"<b>Ubicación:</b> {self.location}"
