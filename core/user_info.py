@@ -1,6 +1,7 @@
 import socket
 from datetime import datetime
 import psutil
+import geocoder
 
 class UserInfo:
     def __init__(self, names = None, departament = None):
@@ -20,7 +21,7 @@ class UserInfo:
     
     def getLocation(self):
         try:
-            import geocoder
+
             g = geocoder.ip('me')
             return g.city if g.city else "No disponible"
         except:
