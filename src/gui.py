@@ -1,11 +1,13 @@
 import customtkinter as ctk
 from customtkinter import CTkImage
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 from PIL import Image
 import os
 import threading
 import pythoncom
 import traceback
+import time
+import shutil
 from .main import main as generar_informe
 
 class App(ctk.CTk):
@@ -60,6 +62,12 @@ class App(ctk.CTk):
         self.again_btn.pack()
         self.action_frame.pack_forget()
 
+        
+        # Mensaje de progreso
+        self.generating_label = ctk.CTkLabel(self, text="Generando informe...", font=ctk.CTkFont(size=14))
+        self.generating_label.pack(pady=(0, 0))
+        self.generating_label.pack_forget()
+
         # Centrar ventana
         self.after(100, self.center_window)
 
@@ -81,16 +89,38 @@ class App(ctk.CTk):
         self.btn.configure(state="disabled")
         self.progress.pack(pady=10)
         self.progress.set(0)
+        self.generating_label.pack()  # Mostrar mensaje
         self.success_label.pack_forget()
         self.action_frame.pack_forget()
-        threading.Thread(target=self.run_report(names, departament)).start()
+        threading.Thread(target=self.run_report, args=(names, departament)).start()
 
     def run_report(self, names, department):
         pythoncom.CoInitialize()
         try:
-            self.progress.set(0.1)
+            # Simulación de progreso visual
+            for pct in [0.1, 0.3, 0.6, 0.8]:
+                self.progress.set(pct)
+                self.update_idletasks()
+                time.sleep(0.3)
             generar_informe(names, department, self.progress)
             self.progress.set(1)
+
+            # Ruta del informe generado
+            from pathlib import Path
+            reports_dir = Path(__file__).resolve().parent.parent / "reports"
+            safe_names = "".join(c for c in names if c.isalnum() or c in (" ", "_", "-")).strip()
+            informe_final = reports_dir / f"Informe Técnico {safe_names}.pdf"
+
+            # Diálogo para guardar como...
+            destino = filedialog.asksaveasfilename(
+                defaultextension=".pdf",
+                filetypes=[("PDF files", "*.pdf")],
+                initialfile=f"Informe Técnico {safe_names}.pdf",
+                title="Guardar informe como..."
+            )
+            if destino:
+                shutil.copy(str(informe_final), destino)
+
             self.success_label.configure(text="¡Informe generado correctamente!")
             self.success_label.pack()
             self.action_frame.pack(pady=(10, 0))
@@ -100,6 +130,8 @@ class App(ctk.CTk):
         finally:
             self.btn.configure(state="normal")
             self.progress.pack_forget()
+            self.generating_label.pack_forget()  # Ocultar mensaje
+
 
     def close_app(self):
         self.destroy()
