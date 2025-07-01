@@ -5,7 +5,10 @@ class ProcessInfo:
     def __init__(self):
         pass
 
-    def getInfo(self, topN=10):
+    def get_info(self, top_n=10):
+        """
+        Devuelve una tabla con los procesos que más recursos consumen.
+        """
         grouped = defaultdict(lambda: {'cpu': 0.0, 'ram': 0.0, 'count': 0, 'mem_real': 0.0})
 
         for proc in psutil.process_iter(['name', 'pid']):
@@ -30,11 +33,11 @@ class ProcessInfo:
         # Convertir a lista y ordenar por RAM y CPU combinadas
         summary = sorted(grouped.items(), key=lambda x: (x[1]['mem_real'], x[1]['cpu']), reverse=True)
 
-        cabecera = ["Proceso", "Instancias", "CPU (%)", "RAM (%)", "Memoria Total (MB)"]
-        filas = []
+        header = ["Proceso", "Instancias", "CPU (%)", "RAM (%)", "Memoria Total (MB)"]
+        rows = []
 
-        for name, stats in summary[:topN]:
-            filas.append([
+        for name, stats in summary[:top_n]:
+            rows.append([
                 name,
                 str(stats['count']),
                 f"{stats['cpu']:.1f}",
@@ -42,15 +45,4 @@ class ProcessInfo:
                 f"{stats['mem_real']:.1f} MB"
             ])
 
-        return cabecera, filas  
-        
-    def print(self):
-        print("------ Procesos con Mayor Consumo de Recursos ------")
-        cabecera, filas = self.getInfo()
-
-        # Encabezado con alineación
-        print(f"{cabecera[0]:<30} {cabecera[1]:<10} {cabecera[2]:<10} {cabecera[3]:<10} {cabecera[4]}")
-        print("-" * 80)
-
-        for fila in filas:
-            print(f"{fila[0]:<30} {fila[1]:<10} {fila[2]:<10} {fila[3]:<10} {fila[4]}")
+        return header, rows
