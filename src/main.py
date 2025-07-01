@@ -116,7 +116,7 @@ def main(names=None, department=None, progress=None):
         print("Guardando PDF...")
         pdf.save_document()
         print("Aplicando plantilla...")
-        apply_template()
+        apply_template(names)
         print("Informe generado correctamente.")
     except Exception as e:
         print("ERROR en la generación del informe:")
@@ -127,7 +127,7 @@ def main(names=None, department=None, progress=None):
 
 
 #Aplicar la plantilla sobre el informe generado
-def apply_template():
+def apply_template(names):
     # Definir rutas
     base_dir = Path(__file__).resolve().parent.parent  # Subir un nivel para llegar a C:\Proyecto
     reports_dir = base_dir / "reports"
@@ -139,7 +139,9 @@ def apply_template():
     # Rutas a los archivos
     template_path = data_dir / "plantilla.pdf"
     report_path = reports_dir / "informe_contenido.pdf"
-    final_report_path = reports_dir / "informe_final.pdf"
+
+    safe_names = "".join(c for c in names if c.isalnum() or c in (" ", "_", "-")).strip()
+    final_report_path = reports_dir / f"Informe Técnico {safe_names}.pdf"
 
     # Cargar PDFs
     template = PdfReader(str(template_path)).pages
