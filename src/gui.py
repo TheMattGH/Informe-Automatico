@@ -14,7 +14,7 @@ class App(ctk.CTk):
 
     def __init__(self):
         super().__init__()
-        self.title("Generador de Informes")
+        self.title("Generador de Informes Automático")
         self.geometry("420x400")
         self.resizable(False, False)
         ctk.set_appearance_mode("light")
@@ -56,8 +56,8 @@ class App(ctk.CTk):
 
         # Frame para los botones de acción (OK y Volver a generar)
         self.action_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.ok_btn = ctk.CTkButton(self.action_frame, text="OK", width=120, command=self.close_app)
-        self.again_btn = ctk.CTkButton(self.action_frame, text="Volver a generar", width=140, command=self.reset_form)
+        self.ok_btn = ctk.CTkButton(self.action_frame, text="Salir", width=120, command=self.close_app)
+        self.again_btn = ctk.CTkButton(self.action_frame, text="Generar de nuevo", width=140, command=self.reset_form)
         self.ok_btn.pack(pady=(0, 8))
         self.again_btn.pack()
         self.action_frame.pack_forget()

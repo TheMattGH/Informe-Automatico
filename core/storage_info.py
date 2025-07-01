@@ -2,10 +2,17 @@ import wmi
 import psutil
 
 class StorageInfo:
+    """
+    Clase para obtener información detallada de los discos de almacenamiento del sistema.
+    """
+
     def __init__(self):
         self.c = wmi.WMI()
     
-    def getInfo(self):
+    def get_info(self):
+        """
+        Devuelve una lista de diccionarios con información relevante de cada disco.
+        """
         disks = []
 
         for disk in self.c.Win32_DiskDrive():
@@ -54,16 +61,3 @@ class StorageInfo:
             disks.append(disk_data)
 
         return disks
-    
-    def print(self):
-        print("------ Informacion de Almacenamiento ------")
-        for disk in self.getInfo():
-            print(f"Modelo: {disk['model']}")
-            print(f"Tamaño: {disk['size']}")
-            print(f"Espacio Usado: {disk["used"]}")
-            print(f"Espacio Libre: {disk["free"]}")
-            print(f"Porcentaje Usado: {disk["usedPercent"]}")
-            print(f"Numero de Serie: {disk['serial']}")
-            print(f"Particines: {disk['partitions']}")
-            print(f"Tipo: {disk['media_type']}")
-            print("-" * 40)
