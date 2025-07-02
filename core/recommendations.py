@@ -26,7 +26,7 @@ def generate_recommendations(cpu_info, ram_info, storage_info, processes):
     except Exception:
         recommendations.append("No se pudo analizar el uso de la memoria RAM.")
 
-    # Recomendaciones sobre almacenamiento (solo si hay alerta)
+    # Recomendaciones sobre almacenamiento 
     try:
         for disk in storage_info:
             usage = float(disk.get("usedPercent", "0").replace('%', ''))
@@ -79,5 +79,10 @@ def generate_recommendations(cpu_info, ram_info, storage_info, processes):
         recommendations.append("No se pudo analizar el consumo de recursos por procesos.")
 
     # Recomendaciones generales
+    recommendations.append("---RECOMENDACIONES GENERALES---")
     recommendations.append("Recuerde mantener su sistema operativo y programas actualizados para mayor seguridad y rendimiento.")
     recommendations.append("Realice mantenimientos periódicos: limpieza de archivos temporales, desfragmentación (si usa HDD) y revisión de programas de inicio.")
+    recommendations.append("Revise las aplicaciones que se inician automáticamente con Windows y desactive las innecesarias.")
+    recommendations.append("Desinstale programas que no utilice para liberar espacio y recursos del sistema.")
+
+    return recommendations

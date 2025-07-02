@@ -147,12 +147,26 @@ class PDFBlocks:
         lines.append("-" * total_width)
         lines.append(tittle.center(total_width + len(tittle) - len("RECOMENDACIONES DEL SISTEMA")))
         lines.append("-" * total_width)
+        
         if not recommendations:
             lines.append("No se detectaron problemas significativos en el sistema.")
         else:
             for rec in recommendations:
-                wrapped = textwrap.wrap(f"• {rec}", width=total_width)
-                lines.extend(wrapped)
+                # Tratamiento especial para la línea divisoria de recomendaciones generales
+                if rec.startswith("---RECOMENDACIONES GENERALES---"):
+                    # Añade una línea separadora
+                    lines.append("-" * total_width)
+                    # Centra el texto de recomendaciones generales y lo pone en negrita
+                    subtitle = "<b>RECOMENDACIONES GENERALES</b>"
+                    left_space = (total_width - len("RECOMENDACIONES GENERALES")) // 2
+                    centered_subtitle = " " * left_space + subtitle
+                    lines.append(centered_subtitle)
+                    lines.append("-" * total_width)
+                else:
+                    # Formato normal para el resto de recomendaciones
+                    wrapped = textwrap.wrap(f"• {rec}", width=total_width)
+                    lines.extend(wrapped)
+        
         lines.append("-" * total_width)
         block = XPreformatted("\n".join(lines), style)
         content.append(KeepTogether([block, Spacer(1, 6)]))
