@@ -64,19 +64,7 @@ class PDFGenerator:
         self.content.append(Paragraph(tittle, title_style))
         self.content.append(Paragraph(text, html_style))
         self.content.append(Spacer(1, 4))
-
-    # def agregar_recomendaciones(self, recomendaciones):
-    #     """
-    #     Agrega una sección de recomendaciones técnicas al informe.
-    #     """
-    #     self.content.append(Spacer(1, 12))
-    #     self.content.append(Paragraph("<b>Recomendaciones del Sistema</b>", self.styles["Heading2"]))
-    #     if not recomendaciones:
-    #         self.content.append(Paragraph("No se detectaron problemas significativos en el sistema.", self.styles["Normal"]))
-    #     else:
-    #         for rec in recomendaciones:
-    #             self.content.append(Paragraph(rec, self.styles["Normal"]))
-
+        
     def page_footer(self, canvas, doc):
         """
         Dibuja el pie de página en cada página del informe.
