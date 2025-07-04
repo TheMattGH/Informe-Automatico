@@ -1,6 +1,5 @@
 import sys
 import os
-import threading
 import time
 import shutil
 import traceback
@@ -8,9 +7,9 @@ from pathlib import Path
 
 from PySide6.QtWidgets import (QApplication, QMainWindow, QVBoxLayout, QWidget,
                               QLabel, QLineEdit, QPushButton, QProgressBar,
-                              QFileDialog, QMessageBox, QFrame, QHBoxLayout)
-from PySide6.QtCore import Qt, Signal, QSize, QObject, QThread
-from PySide6.QtGui import QPixmap, QFont, QIcon
+                              QFileDialog, QMessageBox, QHBoxLayout)
+from PySide6.QtCore import Qt, Signal, QObject, QThread
+from PySide6.QtGui import QPixmap, QFont
 
 from .main import main as generar_informe
 
@@ -83,7 +82,7 @@ class App(QMainWindow):
         self.layout.addSpacing(10)
         
         # Campos de entrada - Nombres
-        name_label = QLabel("Nombres:")
+        name_label = QLabel("Nombre y Apellido:")
         name_label.setFont(QFont("Arial", 10))
         self.layout.addWidget(name_label)
         

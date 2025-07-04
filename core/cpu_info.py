@@ -13,6 +13,8 @@ class CPUInfo:
         try:
             self.c = wmi.WMI()
             self.cpu_info = self.c.Win32_Processor()[0]
+            # Inicializa la medición del CPU
+            psutil.cpu_percent(interval=0)
         except Exception as e:
             self.c = None
             self.cpu_info = None
@@ -49,7 +51,7 @@ class CPUInfo:
         except Exception as e:
             max_clock_speed = f"Error: {e}"
         try:
-            current_usage = f"{psutil.cpu_percent(interval=1)}%"
+            current_usage = f"{int(psutil.cpu_percent(interval=0.1))}%"
         except Exception as e:
             current_usage = f"Error: {e}"
 

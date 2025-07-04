@@ -27,6 +27,10 @@ class PDFBlocks:
             center_tittle = " " * left_space + flat_tittle
 
             bloque = f"{'-'*total_width}\n<b>{center_tittle}</b>\n{'-'*total_width}\n"
+            if not isinstance(fields, dict):
+                bloque += "Sin datos disponibles\n"
+                bloque += '-'*total_width + '\n'
+                return bloque
             for key, value in fields.items():
                 bold_keys = f"<b>{key}:</b>"
                 if isinstance(value, list):
