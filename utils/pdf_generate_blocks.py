@@ -54,10 +54,6 @@ class PDFBlocks:
         """
         Agrega una tabla de procesos del sistema al informe.
         """
-        from reportlab.platypus import XPreformatted, KeepTogether, Spacer
-        from reportlab.lib.styles import ParagraphStyle
-        from reportlab.lib.enums import TA_LEFT
-
         table_style = ParagraphStyle(
             name="TablaProcesos",
             fontName="Courier",
@@ -90,10 +86,6 @@ class PDFBlocks:
         """
         Agrega una tabla de periféricos conectados al informe.
         """
-        from reportlab.platypus import XPreformatted, KeepTogether, Spacer
-        from reportlab.lib.styles import ParagraphStyle
-        from reportlab.lib.enums import TA_LEFT
-
         style = ParagraphStyle(
             name="PerifericosTabla",
             fontName="Courier",

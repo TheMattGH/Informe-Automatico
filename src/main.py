@@ -15,6 +15,9 @@ import traceback
 import logging
 from pathlib import Path
 from utils.pdf_generator import PDFGenerator
+import sys
+import os
+from utils.paths import get_bundle_base
 
 # Configurar logging
 reports_dir = Path(__file__).resolve().parent.parent / "reports"
@@ -35,17 +38,18 @@ def main(names=None, department=None, progress=None):
     start_time = time.time()
     pdf = None
     reports_dir = None
-    
+
     try:
+        # Usar la función utilitaria para la ruta base
+        base_dir = get_bundle_base()
+        reports_dir = base_dir / "reports"
+        reports_dir.mkdir(parents=True, exist_ok=True)
+
         # Actualizar progreso si está disponible
         if progress:
             progress.set(10)
             progress.update_idletasks()
             
-        # Crear el directorio de reportes si no existe
-        reports_dir = Path(__file__).resolve().parent.parent / "reports"
-        reports_dir.mkdir(parents=True, exist_ok=True)
-        
         # Generar PDF base
         pdf = PDFGenerator(str(reports_dir / "informe_contenido.pdf"))
         pdf.add_tittle("INFORME TECNICO DEL SISTEMA")

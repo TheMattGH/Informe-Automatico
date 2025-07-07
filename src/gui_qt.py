@@ -12,6 +12,7 @@ from PySide6.QtCore import Qt, Signal, QObject, QThread
 from PySide6.QtGui import QPixmap, QFont
 
 from .main import main as generar_informe
+from utils.paths import get_bundle_base
 
 # Clase para manejar el hilo de generación del informe
 class InformeWorker(QObject):
@@ -69,8 +70,15 @@ class App(QMainWindow):
         self.layout.setContentsMargins(20, 20, 20, 20)
         
         # Logo
-        logo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../data/assets/LOGOBA.png"))
-        logo_pixmap = QPixmap(logo_path)
+        if getattr(sys, 'frozen', False):
+            base_dir = Path(os.path.dirname(sys.executable))
+            assets_dir = Path(getattr(sys, '_MEIPASS')) / "data" / "assets"
+        else:
+            base_dir = Path(__file__).resolve().parent.parent
+            assets_dir = base_dir / "data" / "assets"
+
+        logo_path = assets_dir / "LOGOBA.png"
+        logo_pixmap = QPixmap(str(logo_path))
         max_width = 180
         if logo_pixmap.width() > max_width:
             logo_pixmap = logo_pixmap.scaledToWidth(max_width, Qt.SmoothTransformation)
@@ -295,34 +303,38 @@ class App(QMainWindow):
     
     def on_report_finished(self):
         try:
-            # Ruta del informe generado
-            reports_dir = Path(__file__).resolve().parent.parent / "reports"
+            base_dir = get_bundle_base()
+            reports_dir = base_dir / "reports"
             safe_names = "".join(c for c in self.names.text() if c.isalnum() or c in (" ", "_", "-")).strip()
             informe_final = reports_dir / f"Informe Técnico {safe_names}.pdf"
-            
-            # Diálogo para guardar como...
+
+            if not informe_final.exists():
+                QMessageBox.critical(self, "Error", f"No se pudo generar el informe final:\n{informe_final}")
+                self.btn.setVisible(True)
+                self.progress_widget.setVisible(False)
+                return
+
             destino, _ = QFileDialog.getSaveFileName(
                 self,
                 "Guardar informe como...",
                 f"Informe Técnico {safe_names}.pdf",
                 "PDF files (*.pdf)"
             )
-            
+
             if destino:
                 shutil.copy(str(informe_final), destino)
-            
-            # Actualizar UI para mostrar éxito
-            self.success_label.setText("¡Informe generado correctamente!")
+                self.success_label.setText("¡Informe guardado correctamente!")
+            else:
+                self.success_label.setText("¡Informe generado pero no guardado!")
+
             self.success_label.setVisible(True)
             self.action_frame.setVisible(True)
-            
+
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Ocurrió un error al guardar el informe:\n{e}")
+            QMessageBox.critical(self, "Error", f"Ocurrió un error al guardar el informe:\n{str(e)}")
             print(traceback.format_exc())
         finally:
-            # Ocultar elementos de progreso
             self.progress_widget.setVisible(False)
-            # No mostrar el botón principal hasta que se reinicie
     
     def on_report_error(self, error_msg):
         QMessageBox.critical(self, "Error", f"Ocurrió un error:\n{error_msg}")

@@ -1,1 +1,0 @@
-2025-07-04 15:32:54,967 - ERROR - Status code Unknown from http://ipinfo.io/json: ERROR - HTTPConnectionPool(host='ipinfo.io', port=80): Max retries exceeded with url: /json (Caused by NameResolutionError("<urllib3.connection.HTTPConnection object at 0x0000021C52B38D70>: Failed to resolve 'ipinfo.io' ([Errno 11002] getaddrinfo failed)"))
