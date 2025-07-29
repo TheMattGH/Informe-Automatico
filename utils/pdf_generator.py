@@ -3,6 +3,8 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import cm
 from reportlab.lib.enums import TA_LEFT, TA_CENTER
+import textwrap
+
 class PDFGenerator:
     """
     Clase para la generación estructurada de informes PDF técnicos.
@@ -37,9 +39,9 @@ class PDFGenerator:
         )
         self.content.append(Paragraph(texto, tittle_style))
 
-    def add_paragraph(self, text, tittle):
+    def add_paragraph(self, text, tittle=None, width=80):
         """
-        Agrega una sección de párrafo con título y contenido HTML.
+        Agrega una sección de párrafo con título y contenido HTML, limitando el ancho.
         """
         title_style = ParagraphStyle(
             name="TituloUsuario",
@@ -61,8 +63,20 @@ class PDFGenerator:
             spaceAfter=1,
             alignment=TA_LEFT
         )
-        self.content.append(Paragraph(tittle, title_style))
-        self.content.append(Paragraph(text, html_style))
+        # Limitar el ancho de cada línea del texto
+        def wrap_html_lines(txt, width):
+            lines = []
+            for line in txt.splitlines():
+                # Si la línea contiene etiquetas HTML, NO la envuelvas, solo agrégala tal cual
+                if "<" in line and ">" in line:
+                    lines.append(line)
+                else:
+                    lines.extend(textwrap.wrap(line, width=width))
+            return "<br/>".join(lines)
+        wrapped_text = wrap_html_lines(text, width)
+        if tittle:
+            self.content.append(Paragraph(tittle, title_style))
+        self.content.append(Paragraph(wrapped_text, html_style))
         self.content.append(Spacer(1, 4))
         
     def page_footer(self, canvas, doc):

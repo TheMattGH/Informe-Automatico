@@ -44,11 +44,15 @@ a = Analysis(
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
+
+# Generar ejecutable portable (onefile)
 exe = EXE(
     pyz,
     a.scripts,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
     [],
-    exclude_binaries=True,
     name='Generador de Informes',  # Nombre del ejecutable
     debug=False,
     bootloader_ignore_signals=False,
@@ -60,16 +64,6 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=os.path.join('data', 'assets', 'app_icon.ico')  # Icono del ejecutable
-)
-
-coll = COLLECT(
-    exe,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
-    strip=False,
-    upx=True,
-    upx_exclude=[],
-    name='Generador de Informes Automático',  # Nombre de la carpeta final en dist/
+    icon=os.path.join('data', 'assets', 'app_icon.ico'),  # Icono del ejecutable
+    singlefile=True  # Clave para modo onefile
 )

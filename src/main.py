@@ -104,6 +104,16 @@ def main(names=None, department=None, progress=None):
         # Recomendaciones técnicas
         PDFBlocks.add_recommendations_block(pdf.content, recommendations)
         
+        # Nota importante
+        important_note = (
+            "<br/>"
+            "Si el equipo presenta fallas o problemas de rendimiento, por favor adjunte este informe al crear una solicitud en <b>Mesa de Servicios</b>.<br/>"
+            "Seleccione en <b>Servicio</b> o <b>Subservicio</b>: <b>Soporte técnico</b><br/>"
+            "y en <b>Aplicativo</b>: <b>Revisión de informe técnico</b>.<br/>"
+            "Esto permitirá una atención más rápida y precisa por parte del equipo de soporte."
+)
+        pdf.add_paragraph(important_note, "IMPORTANTE")
+
         if progress:
             progress.set(90)
             progress.update_idletasks()

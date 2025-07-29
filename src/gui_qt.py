@@ -70,19 +70,13 @@ class App(QMainWindow):
         self.layout.setContentsMargins(20, 20, 20, 20)
         
         # Logo
-        if getattr(sys, 'frozen', False):
-            base_dir = Path(os.path.dirname(sys.executable))
-            assets_dir = Path(getattr(sys, '_MEIPASS')) / "data" / "assets"
-        else:
-            base_dir = Path(__file__).resolve().parent.parent
-            assets_dir = base_dir / "data" / "assets"
-
+        assets_dir = get_bundle_base() / "data" / "assets"
         logo_path = assets_dir / "LOGOBA.png"
         logo_pixmap = QPixmap(str(logo_path))
         max_width = 180
         if logo_pixmap.width() > max_width:
             logo_pixmap = logo_pixmap.scaledToWidth(max_width, Qt.SmoothTransformation)
-            
+
         logo_label = QLabel()
         logo_label.setPixmap(logo_pixmap)
         logo_label.setAlignment(Qt.AlignCenter)
