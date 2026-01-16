@@ -1,0 +1,27 @@
+# ============================================
+# Configuración de GitHub Linguist
+# Ignorar archivos generados para estadísticas
+# ============================================
+
+# Ignorar archivos HTML generados (reportes, exports)
+*.html linguist-vendored
+
+# Ignorar archivos de estilo y scripts generados
+*.css linguist-vendored
+*.js linguist-vendored
+
+# Ignorar carpetas de assets y reportes
+data/assets/* linguist-vendored
+reports/* linguist-vendored
+
+# Ignorar archivos TeX/LaTeX si los hay
+*.tex linguist-vendored
+*.aux linguist-vendored
+*.log linguist-vendored
+
+# Ignorar archivos de build
+build/* linguist-generated
+dist/* linguist-generated
+
+# Marcar Python como lenguaje principal
+*.py linguist-detectable=true

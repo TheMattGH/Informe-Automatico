@@ -1,0 +1,47 @@
+# ============================================
+# Archivos y carpetas ignorados
+# ============================================
+
+# === Reportes generados (información real) ===
+/reports/
+/output/
+*.pdf
+
+# === Assets sensibles del banco ===
+/data/assets/bank_logos/
+/data/assets/private/
+secrets.py
+config.ini
+
+# === Archivos temporales de Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# === Entorno virtual ===
+env/
+venv/
+.env
+
+# === Build y distribución ===
+build/
+dist/
+*.spec
+*.exe
+
+# === IDE y editores ===
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# === Archivos del sistema ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === Pytest cache ===
+.pytest_cache/
+.coverage
+htmlcov/
