@@ -19,6 +19,13 @@ reports/* linguist-vendored
 *.aux linguist-vendored
 *.log linguist-vendored
 
+# Ignorar bytecode de Python (detectado como TeX)
+*.pyc linguist-vendored
+*.pyo linguist-vendored
+
+# Ignorar archivos de Inno Setup
+*.iss linguist-vendored
+
 # Ignorar archivos de build
 build/* linguist-generated
 dist/* linguist-generated
